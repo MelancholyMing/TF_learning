@@ -12,13 +12,16 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 def main():
     gpus = tf.config.experimental.list_physical_devices("GPU")
-    if gpus:
-        try:
-            for gpu in gpus:
-                tf.config.experimental.set_memory_growth(gpu, True)
-        except RuntimeError as e:
-            print(e)
-            exit(-1)
+    tf.config.experimental.set_virtual_device_configuration(
+        gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=4096)])
+
+    # if gpus:
+    #     try:
+    #         for gpu in gpus:
+    #             tf.config.experimental.set_memory_growth(gpu, True)
+    #     except RuntimeError as e:
+    #         print(e)
+    #         exit(-1)
 
     data_root = os.path.abspath(os.path.join(os.getcwd(), "../.."))  # get data root path
     image_path = os.path.join(data_root, "data_set", "flower_data")  # flower data set path
@@ -72,10 +75,14 @@ def main():
         image = tf.image.convert_image_dtype(image, tf.float32)
         image = tf.image.resize(image, [im_height, im_width])
         return image, label
-
+    # GPU 做模型运算的同时 CPU 加载数据。 设置 num_parallel_calls=tf.data.experimental.AUTOTUNE，
+    # 这样会自动设置为最大的可用线程数，机器算力拉满
     AUTOTUNE = tf.data.experimental.AUTOTUNE
 
     # load train dataset
+    # tf.data.Dataset.prefetch 提供了 software pipelining 机制。该函数解耦了 数据产生的时间 和 数据消耗的时间。
+    # 具体来说，该函数有一个后台线程和一个内部缓存区，在数据被请求前，就从 dataset 中预加载一些数据（进一步提高性能）。
+    # prefech(n) 一般作为最后一个 transformation，其中 n 为 batch_size。
     train_dataset = tf.data.Dataset.from_tensor_slices((train_image_list, train_label_list))
     train_dataset = train_dataset.shuffle(buffer_size=train_num)\
                                  .map(process_path, num_parallel_calls=AUTOTUNE)\

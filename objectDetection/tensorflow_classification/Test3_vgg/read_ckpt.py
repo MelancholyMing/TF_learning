@@ -5,6 +5,7 @@ def rename_var(ckpt_path, new_ckpt_path, num_classes=5):
     with tf.Graph().as_default(), tf.compat.v1.Session().as_default() as sess:
         var_list = tf.train.list_variables(ckpt_path)
         new_var_list = []
+        print(var_list)
 
         for var_name, shape in var_list:
             # print(var_name)

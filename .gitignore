@@ -140,3 +140,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/objectDetection/data_set/flower_data/
+/objectDetection/tensorflow_classification/Test3_vgg/save_weights/
