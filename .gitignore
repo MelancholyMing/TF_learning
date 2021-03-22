@@ -152,4 +152,3 @@ dmypy.json
 /objectDetection/pytorch_object_detection/ssd/save_weights/
 /objectDetection/pytorch_object_detection/faster_rcnn/save_weights/
 /objectDetection/pytorch_object_detection/ssd/src/nvidia_ssdpyt_fp32.pt
-/objectDetection/pytorch_object_detection/yolov3_spp/cfg/my_yolov3.cfg
