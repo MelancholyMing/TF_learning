@@ -147,7 +147,6 @@ dmypy.json
 /objectDetection/pytorch_object_detection/faster_rcnn/backbone/mobilenet_v2.pth
 /objectDetection/pytorch_object_detection/VOCdevkit/
 /objectDetection/pytorch_object_detection/ssd/src/nvidia_ssdpyt_fp32_190826.pt
-/objectDetection/pytorch_object_detection/yolov3_spp/data/my_data_label.names
 /objectDetection/pytorch_object_detection/yolov3_spp/my_yolo_dataset/train/
 /objectDetection/pytorch_object_detection/yolov3_spp/my_yolo_dataset/val/
 /objectDetection/pytorch_object_detection/ssd/save_weights/
