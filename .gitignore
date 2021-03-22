@@ -142,3 +142,14 @@ dmypy.json
 .pyre/
 /objectDetection/data_set/flower_data/
 /objectDetection/tensorflow_classification/Test3_vgg/save_weights/
+/objectDetection/pytorch_object_detection/faster_rcnn/fasterrcnn_voc2012.pth
+/objectDetection/pytorch_object_detection/faster_rcnn/backbone/fasterrcnn_resnet50_fpn_coco.pth
+/objectDetection/pytorch_object_detection/faster_rcnn/backbone/mobilenet_v2.pth
+/objectDetection/pytorch_object_detection/VOCdevkit/
+/objectDetection/pytorch_object_detection/ssd/src/nvidia_ssdpyt_fp32_190826.pt
+/objectDetection/pytorch_object_detection/yolov3_spp/data/my_data_label.names
+/objectDetection/pytorch_object_detection/yolov3_spp/my_yolo_dataset/train/
+/objectDetection/pytorch_object_detection/yolov3_spp/my_yolo_dataset/val/
+/objectDetection/pytorch_object_detection/ssd/save_weights/
+/objectDetection/pytorch_object_detection/faster_rcnn/save_weights/
+/objectDetection/pytorch_object_detection/ssd/src/nvidia_ssdpyt_fp32.pt

@@ -29,17 +29,16 @@ def main():
     print(device)
 
     # create model
-    model = create_model(num_classes=21)
+    # 目标检测数 + 背景
+    num_classes = 20 + 1
+    model = create_model(num_classes=num_classes)
 
     # load train weights
-    train_weights = "./save_weights/ssd300-15.pth"
+    train_weights = "./save_weights/ssd300-14.pth"
     train_weights_dict = torch.load(train_weights, map_location=device)['model']
 
-    model.load_state_dict(train_weights_dict, strict=False)
+    model.load_state_dict(train_weights_dict)
     model.to(device)
-    # initial model
-    init_img = torch.zeros((1, 3, 300, 300), device=device)
-    model(init_img)
 
     # read class_indict
     json_path = "./pascal_voc_classes.json"
@@ -61,6 +60,10 @@ def main():
 
     model.eval()
     with torch.no_grad():
+        # initial model
+        init_img = torch.zeros((1, 3, 300, 300), device=device)
+        model(init_img)
+
         time_start = time_synchronized()
         predictions = model(img.to(device))[0]  # bboxes_out, labels_out, scores_out
         time_end = time_synchronized()
@@ -73,7 +76,7 @@ def main():
         predict_scores = predictions[2].to("cpu").numpy()
 
         if len(predict_boxes) == 0:
-            print("没有检测到任何目标!")
+            print("没有检测到任何目标！")
 
         draw_box(original_img,
                  predict_boxes,

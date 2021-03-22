@@ -14,7 +14,7 @@ def main():
     num_classes = 5
 
     # load image
-    img_path = "../tulip.jpg"
+    img_path = "./tulip.jpg"
     assert os.path.exists(img_path), "file: '{}' dose not exist.".format(img_path)
     img = Image.open(img_path)
     # resize image to 224x224
@@ -36,7 +36,8 @@ def main():
 
     # create model
     model = vgg("vgg16", im_height=im_height, im_width=im_width, num_classes=num_classes)
-    weights_path = "./save_weights/myVGG.h5"
+    # weights_path = "./save_weights/myVGG.h5"
+    weights_path = "./save_weights/myVGG.ckpt"
     assert os.path.exists(img_path), "file: '{}' dose not exist.".format(weights_path)
     model.load_weights(weights_path)
 

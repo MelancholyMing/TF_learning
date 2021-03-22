@@ -78,7 +78,7 @@ def main():
         plt.imshow(img_o)
         plt.show()
 
-        img_o.save("test_result.jpg")
+        img_o.save("test_result_0.jpg")
 
 
 if __name__ == "__main__":

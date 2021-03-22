@@ -1,5 +1,7 @@
 import os
-
+# import sys
+#
+# print(sys.path)
 import torch
 
 import transforms
@@ -7,6 +9,7 @@ from network_files.faster_rcnn_framework import FasterRCNN, FastRCNNPredictor
 from backbone.resnet50_fpn_model import resnet50_fpn_backbone
 from my_dataset import VOC2012DataSet
 from train_utils import train_eval_utils as utils
+import torchvision.models.detection.faster_rcnn
 
 
 def create_model(num_classes, device):
@@ -15,11 +18,11 @@ def create_model(num_classes, device):
     model = FasterRCNN(backbone=backbone, num_classes=91)
     # 载入预训练模型权重
     # https://download.pytorch.org/models/fasterrcnn_resnet50_fpn_coco-258fb6c6.pth
-    weights_dict = torch.load("./backbone/fasterrcnn_resnet50_fpn_coco.pth", map_location=device)
-    missing_keys, unexpected_keys = model.load_state_dict(weights_dict, strict=False)
-    if len(missing_keys) != 0 or len(unexpected_keys) != 0:
-        print("missing_keys: ", missing_keys)
-        print("unexpected_keys: ", unexpected_keys)
+    # weights_dict = torch.load("./backbone/fasterrcnn_resnet50_fpn_coco.pth", map_location=device)
+    # missing_keys, unexpected_keys = model.load_state_dict(weights_dict, strict=False)
+    # if len(missing_keys) != 0 or len(unexpected_keys) != 0:
+    #     print("missing_keys: ", missing_keys)
+    #     print("unexpected_keys: ", unexpected_keys)
 
     # get number of input features for the classifier
     in_features = model.roi_heads.box_predictor.cls_score.in_features
@@ -140,7 +143,7 @@ if __name__ == "__main__":
     # 训练设备类型
     parser.add_argument('--device', default='cuda:0', help='device')
     # 训练数据集的根目录
-    parser.add_argument('--data-path', default='./', help='dataset')
+    parser.add_argument('--data-path', default='../', help='dataset')
     # 文件保存地址
     parser.add_argument('--output-dir', default='./save_weights', help='path where to save')
     # 若需要接着上次训练，则指定上次训练保存权重文件地址
@@ -151,7 +154,7 @@ if __name__ == "__main__":
     parser.add_argument('--epochs', default=15, type=int, metavar='N',
                         help='number of total epochs to run')
     # 训练的batch size
-    parser.add_argument('--batch_size', default=4, type=int, metavar='N',
+    parser.add_argument('--batch_size', default=2, type=int, metavar='N',
                         help='batch size when training.')
 
     args = parser.parse_args()
