@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 import math
 from build_utils import torch_utils
@@ -71,7 +72,7 @@ def create_modules(modules_defs: list, img_size):
 
         elif mdef["type"] == "route":  # [-2],  [-1,-3,-5,-6], [-1, 61]
             layers = mdef["layers"]
-            filters = sum([output_filters[l + 1 if l > 0 else l] for l in layers])
+            filters = sum([output_filters[l + 1 if l >= 0 else l] for l in layers])
             routs.extend([i + l if l < 0 else l for l in layers])
             modules = FeatureConcat(layers=layers)
 

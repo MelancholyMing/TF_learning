@@ -7,7 +7,6 @@ import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 from torch.utils.tensorboard import SummaryWriter
 
-
 from models import *
 from build_utils.datasets import *
 from build_utils.utils import *
@@ -29,12 +28,12 @@ def main(opt, hyp):
     if "cuda" not in device.type:
         raise EnvironmentError("not find GPU device for training.")
 
-    # 使用DDP后会对每个device上的gradients取均值，所以需要放大学习率
+    # 使用 DDP 后会对每个 device 上的 gradients 取均值，所以需要放大学习率
     hyp["lr0"] *= max(1., opt.world_size * opt.batch_size / 64)
 
     wdir = "weights" + os.sep  # weights dir
     best = wdir + "best.pt"
-    results_file = "results.txt"
+    results_file = "results{}.txt".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
     cfg = opt.cfg
     data = opt.data
@@ -48,7 +47,7 @@ def main(opt, hyp):
     multi_scale = opt.multi_scale
 
     # Image sizes
-    # 图像要设置成32的倍数
+    # 图像要设置成 32 的倍数
     gs = 32  # (pixels) grid size
     assert math.fmod(imgsz_test, gs) == 0, "--img-size %g must be a %g-multiple" % (imgsz_test, gs)
     grid_min, grid_max = imgsz_test // gs, imgsz_test // gs
@@ -56,7 +55,7 @@ def main(opt, hyp):
         imgsz_min = opt.img_size // 1.5
         imgsz_max = opt.img_size // 0.667
 
-        # 将给定的最大，最小输入尺寸向下调整到32的整数倍
+        # 将给定的最大，最小输入尺寸向下调整到 32 的整数倍
         grid_min, grid_max = imgsz_min // gs, imgsz_max // gs
         imgsz_min, imgsz_max = int(grid_min * gs), int(grid_max * gs)
         imgsz_train = imgsz_max  # initialize with max size
@@ -111,32 +110,32 @@ def main(opt, hyp):
 
         del ckpt
 
-    # 是否冻结权重，只训练predictor的权重
+        # 是否冻结权重，只训练 predictor 的权重
     if opt.freeze_layers:
-        # 索引减一对应的是predictor的索引，YOLOLayer并不是predictor
+        # 索引减一对应的是 predictor 的索引，YOLOLayer 并不是 predictor
         output_layer_indices = [idx - 1 for idx, module in enumerate(model.module_list) if
                                 isinstance(module, YOLOLayer)]
-        # 冻结除predictor和YOLOLayer外的所有层
+        # 冻结除 predictor 和 YOLOLayer 外的所有层
         freeze_layer_indeces = [x for x in range(len(model.module_list)) if
                                 (x not in output_layer_indices) and
                                 (x - 1 not in output_layer_indices)]
         # Freeze non-output layers
-        # 总共训练3x2=6个parameters
+        # 总共训练 3x2=6 个 parameters
         for idx in freeze_layer_indeces:
             for parameter in model.module_list[idx].parameters():
                 parameter.requires_grad_(False)
     else:
-        # 如果freeze_layer为False，默认仅训练除darknet53之后的部分
+        # 如果 freeze_layer 为 False，默认仅训练除 darknet53 之后的部分
         # 若要训练全部权重，删除以下代码
         darknet_end_layer = 74  # only yolov3spp cfg
         # Freeze darknet53 layers
-        # 总共训练21x3+3x2=69个parameters
+        # 总共训练 21x3+3x2=69 个 parameters
         for idx in range(darknet_end_layer + 1):  # [0, 74]
             for parameter in model.module_list[idx].parameters():
                 parameter.requires_grad_(False)
 
-    # SyncBatchNorm
-    # 如果只训练最后的predictor(其中不含bn层)，SyncBatchNorm没有作用
+        # SyncBatchNorm
+        # 如果只训练最后的 predictor (其中不含 bn 层)，SyncBatchNorm 没有作用
     if opt.freeze_layers is False:
         model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model).to(device)
 
@@ -151,10 +150,10 @@ def main(opt, hyp):
     # Scheduler https://arxiv.org/pdf/1812.01187.pdf
     lf = lambda x: ((1 + math.cos(x * math.pi / epochs)) / 2) * (1 - hyp["lrf"]) + hyp["lrf"]  # cosine
     scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
-    scheduler.last_epoch = start_epoch  # 指定从哪个epoch开始
+    scheduler.last_epoch = start_epoch  # 指定从哪个 epoch 开始
 
     # dataset
-    # 训练集的图像尺寸指定为multi_scale_range中最大的尺寸
+    # 训练集的图像尺寸指定为 multi_scale_range 中最大的尺寸
     # Make sure only the first process in DDP process the dataset first, and the following others can use the cache.
     with torch_distributed_zero_first(opt.rank):
         train_dataset = LoadImagesAndLabels(train_path, imgsz_train, batch_size,
@@ -164,17 +163,17 @@ def main(opt, hyp):
                                             cache_images=opt.cache_images,
                                             single_cls=opt.single_cls,
                                             rank=opt.rank)
-        # 验证集的图像尺寸指定为img_size(512)
+        # 验证集的图像尺寸指定为 img_size (512)
         val_dataset = LoadImagesAndLabels(test_path, imgsz_test, batch_size,
                                           hyp=hyp,
                                           cache_images=opt.cache_images,
                                           single_cls=opt.single_cls,
                                           rank=opt.rank)
 
-    # 给每个rank对应的进程分配训练的样本索引
+    # 给每个 rank 对应的进程分配训练的样本索引
     train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
     val_sampler = torch.utils.data.distributed.DistributedSampler(val_dataset)
-    # 将样本索引每batch_size个元素组成一个list
+    # 将样本索引每 batch_size 个元素组成一个 list
     train_batch_sampler = torch.utils.data.BatchSampler(
         train_sampler, batch_size, drop_last=True)
 
@@ -216,13 +215,13 @@ def main(opt, hyp):
         train_sampler.set_epoch(epoch)
         mloss, lr = train_util.train_one_epoch(model, optimizer, train_data_loader,
                                                device, epoch,
-                                               accumulate=accumulate,  # 迭代多少batch才训练完64张图片
+                                               accumulate=accumulate,  # 迭代多少 batch 才训练完 64 张图片
                                                img_size=imgsz_train,  # 输入图像的大小
                                                multi_scale=multi_scale,
-                                               grid_min=grid_min,  # grid的最小尺寸
-                                               grid_max=grid_max,  # grid的最大尺寸
+                                               grid_min=grid_min,  # grid 的最小尺寸
+                                               grid_max=grid_max,  # grid 的最大尺寸
                                                gs=gs,  # grid step: 32
-                                               print_freq=50,  # 每训练多少个step打印一次信息
+                                               print_freq=50,  # 每训练多少个 step 打印一次信息
                                                warmup=True)
         # update scheduler
         scheduler.step()
@@ -304,7 +303,7 @@ if __name__ == '__main__':
     parser.add_argument('--device', default='cuda', help='device id (i.e. 0 or 0,1 or cpu)')
     parser.add_argument('--single-cls', action='store_true', help='train as single-class dataset')
     parser.add_argument('--freeze-layers', type=bool, default=False, help='Freeze non-output layers')
-    # 开启的进程数(注意不是线程),不用设置该参数，会根据nproc_per_node自动设置
+    # 开启的进程数 (注意不是线程), 不用设置该参数，会根据 nproc_per_node 自动设置
     parser.add_argument('--world-size', default=4, type=int,
                         help='number of distributed processes')
     parser.add_argument('--dist-url', default='env://', help='url used to set up distributed training')

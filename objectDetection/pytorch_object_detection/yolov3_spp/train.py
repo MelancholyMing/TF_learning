@@ -1,3 +1,4 @@
+import datetime
 import argparse
 
 import yaml
@@ -18,7 +19,7 @@ def train(hyp):
 
     wdir = "weights" + os.sep  # weights dir
     best = wdir + "best.pt"
-    results_file = "results.txt"
+    results_file = "results{}.txt".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
     cfg = opt.cfg
     data = opt.data
@@ -31,7 +32,7 @@ def train(hyp):
     multi_scale = opt.multi_scale
 
     # Image sizes
-    # 图像要设置成32的倍数
+    # 图像要设置成 32 的倍数
     gs = 32  # (pixels) grid size
     assert math.fmod(imgsz_test, gs) == 0, "--img-size %g must be a %g-multiple" % (imgsz_test, gs)
     grid_min, grid_max = imgsz_test // gs, imgsz_test // gs
@@ -39,14 +40,14 @@ def train(hyp):
         imgsz_min = opt.img_size // 1.5
         imgsz_max = opt.img_size // 0.667
 
-        # 将给定的最大，最小输入尺寸向下调整到32的整数倍
+        # 将给定的最大，最小输入尺寸向下调整到 32 的整数倍
         grid_min, grid_max = imgsz_min // gs, imgsz_max // gs
         imgsz_min, imgsz_max = int(grid_min * gs), int(grid_max * gs)
         imgsz_train = imgsz_max  # initialize with max size
         print("Using multi_scale training, image range[{}, {}]".format(imgsz_min, imgsz_max))
 
     # configure run
-    # init_seeds()  # 初始化随机种子，保证结果可复现
+    # init_seeds ()  # 初始化随机种子，保证结果可复现
     data_dict = parse_data_cfg(data)
     train_path = data_dict["train"]
     test_path = data_dict["valid"]
@@ -61,26 +62,26 @@ def train(hyp):
     # Initialize model
     model = Darknet(cfg).to(device)
 
-    # 是否冻结权重，只训练predictor的权重
+    # 是否冻结权重，只训练 predictor 的权重
     if opt.freeze_layers:
-        # 索引减一对应的是predictor的索引，YOLOLayer并不是predictor
+        # 索引减一对应的是 predictor 的索引，YOLOLayer 并不是 predictor
         output_layer_indices = [idx - 1 for idx, module in enumerate(model.module_list) if
                                 isinstance(module, YOLOLayer)]
-        # 冻结除predictor和YOLOLayer外的所有层
+        # 冻结除 predictor 和 YOLOLayer 外的所有层
         freeze_layer_indeces = [x for x in range(len(model.module_list)) if
                                 (x not in output_layer_indices) and
                                 (x - 1 not in output_layer_indices)]
         # Freeze non-output layers
-        # 总共训练3x2=6个parameters
+        # 总共训练 3x2=6 个 parameters
         for idx in freeze_layer_indeces:
             for parameter in model.module_list[idx].parameters():
                 parameter.requires_grad_(False)
     else:
-        # 如果freeze_layer为False，默认仅训练除darknet53之后的部分
+        # 如果 freeze_layer 为 False，默认仅训练除 darknet53 之后的部分
         # 若要训练全部权重，删除以下代码
         darknet_end_layer = 74  # only yolov3spp cfg
         # Freeze darknet53 layers
-        # 总共训练21x3+3x2=69个parameters
+        # 总共训练 21x3+3x2=69 个 parameters
         for idx in range(darknet_end_layer + 1):  # [0, 74]
             for parameter in model.module_list[idx].parameters():
                 parameter.requires_grad_(False)
@@ -127,7 +128,7 @@ def train(hyp):
     # Scheduler https://arxiv.org/pdf/1812.01187.pdf
     lf = lambda x: ((1 + math.cos(x * math.pi / epochs)) / 2) * (1 - hyp["lrf"]) + hyp["lrf"]  # cosine
     scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
-    scheduler.last_epoch = start_epoch  # 指定从哪个epoch开始
+    scheduler.last_epoch = start_epoch  # 指定从哪个 epoch 开始
 
     # Plot lr schedule
     # y = []
@@ -143,7 +144,7 @@ def train(hyp):
     # model.yolo_layers = model.module.yolo_layers
 
     # dataset
-    # 训练集的图像尺寸指定为multi_scale_range中最大的尺寸
+    # 训练集的图像尺寸指定为 multi_scale_range 中最大的尺寸
     train_dataset = LoadImagesAndLabels(train_path, imgsz_train, batch_size,
                                         augment=True,
                                         hyp=hyp,  # augmentation hyperparameters
@@ -151,10 +152,10 @@ def train(hyp):
                                         cache_images=opt.cache_images,
                                         single_cls=opt.single_cls)
 
-    # 验证集的图像尺寸指定为img_size(512)
+    # 验证集的图像尺寸指定为 img_size (512)
     val_dataset = LoadImagesAndLabels(test_path, imgsz_test, batch_size,
                                       hyp=hyp,
-                                      rect=True,  # 将每个batch的图像调整到合适大小，可减少运算量(并不是512x512标准尺寸)
+                                      rect=True,  # 将每个 batch 的图像调整到合适大小，可减少运算量 (并不是 512x512 标准尺寸)
                                       cache_images=opt.cache_images,
                                       single_cls=opt.single_cls)
 
@@ -191,13 +192,13 @@ def train(hyp):
     for epoch in range(start_epoch, epochs):
         mloss, lr = train_util.train_one_epoch(model, optimizer, train_dataloader,
                                                device, epoch,
-                                               accumulate=accumulate,  # 迭代多少batch才训练完64张图片
+                                               accumulate=accumulate,  # 迭代多少 batch 才训练完 64 张图片
                                                img_size=imgsz_train,  # 输入图像的大小
                                                multi_scale=multi_scale,
-                                               grid_min=grid_min,  # grid的最小尺寸
-                                               grid_max=grid_max,  # grid的最大尺寸
+                                               grid_min=grid_min,  # grid 的最小尺寸
+                                               grid_max=grid_max,  # grid 的最大尺寸
                                                gs=gs,  # grid step: 32
-                                               print_freq=50,  # 每训练多少个step打印一次信息
+                                               print_freq=50,  # 每训练多少个 step 打印一次信息
                                                warmup=True)
         # update scheduler
         scheduler.step()
