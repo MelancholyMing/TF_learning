@@ -155,3 +155,4 @@ dmypy.json
 /objectDetection/pytorch_object_detection/yolov3_spp/weights/
 /objectDetection/pytorch_object_detection/yolov3_spp/yolov3spp-voc-512.pt
 /objectDetection/pytorch_object_detection/yolov3_spp/runs/
+/facenet/model_data/
