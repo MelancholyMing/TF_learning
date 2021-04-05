@@ -1,3 +1,4 @@
+# coding: utf-8
 import os
 import json
 import time
@@ -73,7 +74,7 @@ def main():
 
         bboxes = pred[:, :4].detach().cpu().numpy()
         scores = pred[:, 4].detach().cpu().numpy()
-        classes = pred[:, 5].detach().cpu().numpy().astype(np.int) + 1
+        classes = pred[:, 5].detach().cpu().numpy().astype(np.int32) + 1
 
         img_o = draw_box(img_o[:, :, ::-1], bboxes, classes, scores, category_index)
         plt.imshow(img_o)
