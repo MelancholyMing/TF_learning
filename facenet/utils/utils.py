@@ -156,7 +156,7 @@ def filter_face_24net(cls_prob, roi, rectangles, width, height, threshold):
     w = np.expand_dims(rectangles[:, 2] - rectangles[:, 0], -1)
     h = np.expand_dims(rectangles[:, 3] - rectangles[:, 1], -1)
     rectangles[:, [0, 2]] = rectangles[:, [0, 2]] + roi[:, [0, 2]] * w
-    rectangles[:, [1, 3]] = rectangles[:, [1, 3]] + roi[:, [1, 3]] * w
+    rectangles[:, [1, 3]] = rectangles[:, [1, 3]] + roi[:, [1, 3]] * h
 
     # -------------------------------------------------------#
     #   将预测框和得分进行堆叠，并转换成正方形

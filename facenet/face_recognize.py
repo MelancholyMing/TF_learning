@@ -12,6 +12,7 @@ physical_devices = tf.config.experimental.list_physical_devices('GPU')
 assert len(physical_devices) > 0, "Not enough GPU hardware devices available"
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
+
 class face_rec():
     def __init__(self):
         # -------------------------#
@@ -138,14 +139,19 @@ class face_rec():
 
 if __name__ == "__main__":
     dududu = face_rec()
-    video_capture = cv2.VideoCapture(0)
+    # img = cv2.imread("face_dataset/wyf.png")
+    img = cv2.imread("ts.jpg")
+    dududu.recognize(img)
+    cv2.imshow("img", img)
+    cv2.waitKey(0)
+    # video_capture = cv2.VideoCapture(0)
+    #
+    # while True:
+    #     ret, draw = video_capture.read()
+    #     dududu.recognize(draw)
+    #     cv2.imshow('Video', draw)
+    #     if cv2.waitKey(20) & 0xFF == ord('q'):
+    #         break
 
-    while True:
-        ret, draw = video_capture.read()
-        dududu.recognize(draw)
-        cv2.imshow('Video', draw)
-        if cv2.waitKey(20) & 0xFF == ord('q'):
-            break
-
-    video_capture.release()
-    cv2.destroyAllWindows()
+    # video_capture.release()
+    # cv2.destroyAllWindows()
